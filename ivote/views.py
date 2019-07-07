@@ -1,3 +1,42 @@
 from django.shortcuts import render
+from django.http import JsonResponse
+from ivote.models import Voter
+from django.db import models
 
 # Create your views here.
+
+
+def index(request):
+    data = {
+        'name': 'Vitor',
+        'location': 'Finland',
+        'is_active': True,
+        'count': 28
+    }
+
+    return JsonResponse(data)
+
+
+def show(request):
+
+    first_name = request.GET.get('first_name', None)
+    last_name = request.GET.get('last_name', None)
+    birthdate = request.GET.get('birthday', None)
+
+    if not first_name or not last_name or not birthdate:
+        return JsonResponse({'message': "Must supply first_name, last_name and birthdate"}, status=400)
+
+    try:
+        person = Voter.objects.get(
+            f_name=first_name.upper(), l_name=last_name.upper(), birthdate=birthdate)
+    except:
+        return JsonResponse({'message': f'Record not found for {first_name} {last_name}.'}, status=404)
+
+    data = {
+        'first_name': person.f_name,
+        'last_name': person.l_name,
+        "middle_name": person.m_name,
+        'city': person.city,
+    }
+
+    return JsonResponse(data, status=200)
