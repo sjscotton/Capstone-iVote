@@ -1,5 +1,7 @@
 /voting_app/settings.py
 /venv
+/scripts
 __pycache__
 .vscode
-.env
+.env 
+/scripts
