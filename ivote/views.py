@@ -39,7 +39,8 @@ def show(request):
         'last_name': person.l_name,
         "middle_name": person.m_name,
         'city': person.city,
-        'voter_id': person.state_voter_id
+        'voter_id': person.state_voter_id,
+        'address': person.get_address(),
     }
 
     return JsonResponse(data, status=200)

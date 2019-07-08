@@ -37,7 +37,8 @@ class Voter(models.Model):
         return self.f_name
 
     def get_address(self):
-        return self.city
+
+        return f'{self.st_num} {self.st_pre_direction} {self.st_name} {self.st_type} {self.st_post_direction} {self.unit_num} {self.unit_type}, {self.city}, {self.state}, {self.zip_code}'
 
 
 class Vote_Date(models.Model):
@@ -47,4 +48,5 @@ class Vote_Date(models.Model):
     election_date = models.CharField(max_length=15, default="00")
 
     def __str__(self):
+
         return f'{self.state_voter_id}, {self.election_date}, {self.county_code}'
