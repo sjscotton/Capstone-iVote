@@ -22,6 +22,7 @@ def show(request):
 
     first_name = request.GET.get('first_name', None)
     last_name = request.GET.get('last_name', None)
+
     birthdate = request.GET.get('birthdate', None)
 
     if not first_name or not last_name or not birthdate:
@@ -29,7 +30,7 @@ def show(request):
 
     try:
         person = Voter.objects.get(
-            f_name=first_name.upper(), l_name=last_name.upper(), birthdate=birthdate)
+            f_name=first_name.upper(), l_name=last_name.upper(), birthdate=birthdate.replace('-', '/'))
     except:
         return JsonResponse({'message': f'Record not found for {first_name} {last_name}.'}, status=404)
 
@@ -38,6 +39,7 @@ def show(request):
         'last_name': person.l_name,
         "middle_name": person.m_name,
         'city': person.city,
+        'voter_id': person.state_voter_id
     }
 
     return JsonResponse(data, status=200)
