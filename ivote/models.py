@@ -38,7 +38,7 @@ class Voter(models.Model):
 
     def get_address(self):
 
-        return f'{self.st_num} {self.st_pre_direction} {self.st_name} {self.st_type} {self.st_post_direction} {self.unit_num} {self.unit_type}, {self.city}, {self.state}, {self.zip_code}'
+        return f'{self.st_num} {self.st_pre_direction} {self.st_name} {self.st_type} {self.st_post_direction} {self.unit_type}{self.unit_num}, {self.city}, {self.state}, {self.zip_code}'
 
 
 class Vote_Date(models.Model):

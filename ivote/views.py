@@ -4,6 +4,8 @@ from ivote.models import Voter
 from ivote.models import Vote_Date
 from django.db import models
 
+import random
+
 # Create your views here.
 
 
@@ -14,7 +16,6 @@ def index(request):
         'is_active': True,
         'count': 28
     }
-
     return JsonResponse(data)
 
 
@@ -22,7 +23,6 @@ def show(request):
 
     first_name = request.GET.get('first_name', None)
     last_name = request.GET.get('last_name', None)
-
     birthdate = request.GET.get('birthdate', None)
 
     if not first_name or not last_name or not birthdate:
@@ -38,11 +38,9 @@ def show(request):
         'first_name': person.f_name,
         'last_name': person.l_name,
         "middle_name": person.m_name,
-        'city': person.city,
         'voter_id': person.state_voter_id,
         'address': person.get_address(),
     }
-
     return JsonResponse(data, status=200)
 
 
@@ -56,4 +54,23 @@ def show_votes(request):
         'voting_days': [vote.election_date for vote in votes]
     }
 
+    return JsonResponse(data, status=200)
+
+
+def get_addresses(request):
+    quantity = request.GET.get('quantity', None)
+    quantity = quantity or 5
+    voters = Voter.objects.all()
+
+    addresses = []
+    for i in range(quantity):
+        rand = random.randint(0, 1000000)
+        print(rand)
+        voter = voters[rand]
+        address = voter.get_address()
+        print(address)
+        addresses.append(address)
+    data = {
+        'addresses': addresses
+    }
     return JsonResponse(data, status=200)
