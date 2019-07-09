@@ -2,6 +2,7 @@ from django.shortcuts import render
 from django.http import JsonResponse
 from ivote.models import Voter
 from ivote.models import Vote_Date
+from ivote.models import Election
 from django.db import models
 
 import random
@@ -10,13 +11,14 @@ import random
 
 
 def index(request):
-    data = {
-        'name': 'Vitor',
-        'location': 'Finland',
-        'is_active': True,
-        'count': 28
-    }
-    return JsonResponse(data)
+    county_codes = []
+    voters = Voter.objects.all()
+    # for v in voters:
+    #     if v.county_code not in county_codes:
+    #         county_codes.append(v.county_code)
+    #         print(v.county_code)
+
+    return JsonResponse({"data": county_codes})
 
 
 def show(request):
@@ -65,12 +67,20 @@ def get_addresses(request):
     addresses = []
     for i in range(quantity):
         rand = random.randint(0, 1000000)
-        print(rand)
-        voter = voters[rand]
-        address = voter.get_address()
-        print(address)
+        address = voters[rand].get_address()
         addresses.append(address)
     data = {
         'addresses': addresses
     }
     return JsonResponse(data, status=200)
+
+
+def get_elections(request):
+    county_code = request.GET.get('county_code', None)
+    if not county_code:
+        return JsonResponse({'message': "Must supply county_code"}, status=400)
+
+    elections = Election.objects.filter(county_code=county_code)
+    election_dates = [election.election_date for election in elections]
+    print(election_dates)
+    return JsonResponse({'election_dates': election_dates}, status=200)

@@ -50,3 +50,12 @@ class Vote_Date(models.Model):
     def __str__(self):
 
         return f'{self.state_voter_id}, {self.election_date}, {self.county_code}'
+
+
+class Election(models.Model):
+    county_code = models.CharField(max_length=10, default='00')
+    election_date = models.CharField(max_length=15, default="00")
+
+    def __str__(self):
+
+        return f'{self.county_code}, {self.election_date}'
