@@ -1,5 +1,6 @@
 from django.db import models
 from django.contrib.postgres.fields import ArrayField
+import datetime
 
 # Create your models here.
 
@@ -36,6 +37,26 @@ class Voter(models.Model):
 
     def __str__(self):
         return self.f_name
+
+    def get_age_group(self):
+        year = datetime.datetime.now().year
+        age = year - int(self.birthdate.split('/')[2])
+        if age < 25:
+            return '18-24'
+        elif age < 35:
+            return '25-34'
+        elif age < 45:
+            return '35-44'
+        elif age < 55:
+            return '45-54'
+        elif age < 65:
+            return '55-64'
+        elif age < 75:
+            return '65-74'
+        elif age < 85:
+            return '75-84'
+        else:
+            return '85+'
 
     def get_address(self):
 

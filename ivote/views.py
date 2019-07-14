@@ -47,6 +47,7 @@ def show(request):
         'address': person.get_address(),
         'county_code': person.county_code,
         'city': person.city,
+        'age_group': person.get_age_group()
     }
     return JsonResponse(data, status=200)
 
