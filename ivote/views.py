@@ -3,6 +3,9 @@ from django.http import JsonResponse
 from ivote.models import Voter
 from ivote.models import Vote_Date
 from ivote.models import Election
+from ivote.models import County_Votes
+from ivote.models import City_Votes
+from ivote.models import Voting_Stats
 from django.db import models
 
 import random
@@ -42,6 +45,8 @@ def show(request):
         "middle_name": person.m_name,
         'voter_id': person.state_voter_id,
         'address': person.get_address(),
+        'county_code': person.county_code,
+        'city': person.city,
     }
     return JsonResponse(data, status=200)
 
@@ -77,10 +82,46 @@ def get_addresses(request):
 
 def get_elections(request):
     county_code = request.GET.get('county_code', None)
+    city = request.GET.get('city', None)
     if not county_code:
         return JsonResponse({'message': "Must supply county_code"}, status=400)
 
-    elections = Election.objects.filter(county_code=county_code)
-    election_dates = [election.election_date for election in elections]
-    print(election_dates)
-    return JsonResponse({'election_dates': election_dates}, status=200)
+    # elections = Election.objects.filter(county_code=county_code)
+    # election_dates = [election.election_date for election in elections]
+    # print(election_dates)
+    # return JsonResponse({'election_dates': election_dates}, status=200)
+
+    if city:
+        row = City_Votes.objects.get(city=city)
+        print('======== City =========')
+    else:
+        row = County_Votes.objects.get(county_code=county_code)
+        print('======== County =========')
+
+    max_elections = row.max_votes()
+    return JsonResponse({'max_elections': max_elections}, status=200)
+
+
+def get_stats(request):
+
+    age_group = request.GET.get('age_group', None)
+    city = request.GET.get('city', None)
+    county_code = request.GET.get('county', None)
+
+    if age_group and city:
+        rows = Voting_Stats.objects.filter(age_group=age_group, city=city)
+    elif age_group and county_code:
+        rows = Voting_Stats.objects.filter(
+            age_group=age_group, county_code=county_code)
+    elif city:
+        rows = Voting_Stats.objects.filter(city=city)
+    elif county_code:
+        rows = Voting_Stats.objects.filter(county_code=county_code)
+    else:
+        return JsonResponse({'message': "Must supply age_group, and city or county_code"}, status=400)
+    data = []
+    for row in rows:
+        data.append({'city': row.city, 'county_code': row.county_code, 'age_group': row.age_group,
+                     'voting_freq': row.voting_freq})
+
+    return JsonResponse({'data': data}, status=200)

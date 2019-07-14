@@ -1,4 +1,5 @@
 from django.db import models
+from django.contrib.postgres.fields import ArrayField
 
 # Create your models here.
 
@@ -59,3 +60,71 @@ class Election(models.Model):
     def __str__(self):
 
         return f'{self.county_code}, {self.election_date}'
+
+
+# TODO: combine county_votes and city votes into one table
+
+class Voting_Stats(models.Model):
+    county_code = models.CharField(max_length=10, default='00')
+    city = models.CharField(max_length=30, default='00')
+    voting_freq = ArrayField(models.IntegerField(), size=10,)
+    age_group = models.CharField(max_length=20, default='00')
+
+
+class County_Votes(models.Model):
+    county_code = models.CharField(max_length=10, default='00')
+    zero = models.IntegerField()
+    one = models.IntegerField()
+    two = models.IntegerField()
+    three = models.IntegerField()
+    four = models.IntegerField()
+    five = models.IntegerField()
+    six = models.IntegerField()
+    seven = models.IntegerField()
+
+    def __str__(self):
+
+        return f'County: {self.county_code} \nNumber of Elections: '
+
+    def sample_size(self):
+        return self.zero + self.one + self.two + self.three + self.four + self.five + self.six + self.seven
+
+    def max_votes(self):
+        votes = [self.seven, self.six, self.five, self.four,
+                 self.three, self.two, self.one, self.zero]
+        max_elections = 7
+        for freq in votes:
+            if freq != 0:
+                break
+            max_elections -= 1
+        return max_elections
+
+
+class City_Votes(models.Model):
+    city = models.CharField(max_length=30, default='00')
+    zero = models.IntegerField()
+    one = models.IntegerField()
+    two = models.IntegerField()
+    three = models.IntegerField()
+    four = models.IntegerField()
+    five = models.IntegerField()
+    six = models.IntegerField()
+    seven = models.IntegerField()
+    eight = models.IntegerField()
+
+    def __str__(self):
+
+        return f'City: {self.city}'
+
+    def sample_size(self):
+        return self.zero + self.one + self.two + self.three + self.four + self.five + self.six + self.seven + self.eight
+
+    def max_votes(self):
+        votes = [self.seven, self.six, self.five, self.four,
+                 self.three, self.two, self.one, self.zero]
+        max_elections = 7
+        for freq in votes:
+            if freq != 0:
+                break
+            max_elections -= 1
+        return max_elections
