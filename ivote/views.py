@@ -1,16 +1,18 @@
 from django.shortcuts import render
 from django.http import JsonResponse
-from ivote.models import Voter
-from ivote.models import Vote_Date
-from ivote.models import Election
-from ivote.models import County_Votes
-from ivote.models import City_Votes
-from ivote.models import Voting_Stats
+from ivote.models import Voter, Vote_Date, Election, County_Votes, City_Votes, Voting_Stats
+# from ivote.models import Vote_Date
+# from ivote.models import Election
+# from ivote.models import County_Votes
+# from ivote.models import City_Votes
+# from ivote.models import Voting_Stats
 from django.db import models
 
 from django.conf import settings
 
 import random
+import requests
+import json
 
 
 # Create your views here.
@@ -139,5 +141,14 @@ def get_stats(request):
 
 
 def get_reps(request):
+    address = request.GET.get('address', None)
+    if not address:
+        return JsonResponse({'message': "Must supply address"}, status=400)
+
+    payload = {'key': settings.REPS_API_KEY, 'address': address}
+    url = 'https://www.googleapis.com/civicinfo/v2/representatives'
+    response = requests.get(url, params=payload)
     print(settings.REPS_API_KEY)
-    return JsonResponse({'reps': []}, status=200)
+    print(response.text)
+
+    return JsonResponse({'reps': json.loads(response.text)}, status=200)
