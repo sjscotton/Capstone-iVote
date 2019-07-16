@@ -102,7 +102,7 @@ class Voting_Stats(models.Model):
         sample_size = sum(totals)
         max_votes = len(totals) - 1
         for i in range(len(totals)):
-            if (totals[max_votes] / sample_size) < .03:
+            if (totals[max_votes] / sample_size) < .05:
                 max_votes -= 1
             else:
                 break

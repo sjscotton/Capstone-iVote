@@ -8,7 +8,10 @@ from ivote.models import City_Votes
 from ivote.models import Voting_Stats
 from django.db import models
 
+from django.conf import settings
+
 import random
+
 
 # Create your views here.
 
@@ -133,3 +136,8 @@ def get_stats(request):
         data[row.age_group] = row.voting_freq[:max_votes + 1]
 
     return JsonResponse({'stats': data}, status=200)
+
+
+def get_reps(request):
+    print(settings.REPS_API_KEY)
+    return JsonResponse({'reps': []}, status=200)
