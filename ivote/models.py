@@ -91,6 +91,23 @@ class Voting_Stats(models.Model):
     voting_freq = ArrayField(models.IntegerField(), size=10,)
     age_group = models.CharField(max_length=20, default='00')
 
+    @staticmethod
+    def get_max_votes(rows):
+        totals = []
+        for i in range(len(rows[0].voting_freq)):
+            total = 0
+            for row in rows:
+                total += row.voting_freq[i]
+            totals.append(total)
+        sample_size = sum(totals)
+        max_votes = len(totals) - 1
+        for i in range(len(totals)):
+            if (totals[max_votes] / sample_size) < .03:
+                max_votes -= 1
+            else:
+                break
+        return max_votes
+
 
 class County_Votes(models.Model):
     county_code = models.CharField(max_length=10, default='00')
