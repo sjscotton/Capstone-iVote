@@ -34,15 +34,24 @@ def show(request):
     first_name = request.GET.get('first_name', None)
     last_name = request.GET.get('last_name', None)
     birthdate = request.GET.get('birthdate', None)
+    voter_id = request.GET.get('voter_id', None)
+    print('________________')
+    print(voter_id)
+    if voter_id:
+        try:
+            person = Voter.objects.get(state_voter_id=voter_id)
+        except:
+            return JsonResponse({'message': f'Record not found for voter ID: {voter_id}.'}, status=404)
 
-    if not first_name or not last_name or not birthdate:
-        return JsonResponse({'message': "Must supply first_name, last_name and birthdate"}, status=400)
+    else:
+        if not first_name or not last_name or not birthdate:
+            return JsonResponse({'message': "Must supply first_name, last_name and birthdate"}, status=400)
 
-    try:
-        person = Voter.objects.get(
-            f_name=first_name.upper(), l_name=last_name.upper(), birthdate=birthdate.replace('-', '/'))
-    except:
-        return JsonResponse({'message': f'Record not found for {first_name} {last_name}.'}, status=404)
+        try:
+            person = Voter.objects.get(
+                f_name=first_name.upper(), l_name=last_name.upper(), birthdate=birthdate.replace('-', '/'))
+        except:
+            return JsonResponse({'message': f'Record not found for {first_name} {last_name}.'}, status=404)
 
     data = {
         'first_name': person.f_name,
@@ -145,10 +154,18 @@ def get_reps(request):
     if not address:
         return JsonResponse({'message': "Must supply address"}, status=400)
 
-    payload = {'key': settings.REPS_API_KEY, 'address': address}
-    url = 'https://www.googleapis.com/civicinfo/v2/representatives'
-    response = requests.get(url, params=payload)
-    print(settings.REPS_API_KEY)
-    print(response.text)
+    """ Google Civic API call """
 
-    return JsonResponse({'reps': json.loads(response.text)}, status=200)
+    # payload = {'key': settings.REPS_API_KEY, 'address': address}
+    # url = 'https://www.googleapis.com/civicinfo/v2/representatives'
+    # response = requests.get(url, params=payload)
+    # print(settings.REPS_API_KEY)
+    # print(response.text)
+
+    """Cached response  """
+    import os
+    file = open(os.path.join(settings.BASE_DIR,
+                             'ivote/reps_api_response.json'), 'r')
+    reps = json.load(file)
+
+    return JsonResponse({'reps': reps}, status=200)
