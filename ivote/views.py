@@ -1,6 +1,6 @@
 from django.shortcuts import render
 from django.http import JsonResponse
-from ivote.models import Voter, Vote_Date, Election, County_Votes, City_Votes, Voting_Stats
+from ivote.models import Voter, Vote_Date, Election, County_Votes, City_Votes, Voting_Stats, Visitor
 # from ivote.models import Vote_Date
 # from ivote.models import Election
 # from ivote.models import County_Votes
@@ -35,11 +35,15 @@ def show(request):
     last_name = request.GET.get('last_name', None)
     birthdate = request.GET.get('birthdate', None)
     voter_id = request.GET.get('voter_id', None)
-    print('________________')
-    print(voter_id)
+    # print('________________')
+    # print(voter_id)
     if voter_id:
         try:
-            person = Voter.objects.get(state_voter_id=voter_id)
+            # person = Voter.objects.get(state_voter_id=voter_id)
+            person = Visitor.objects.get(state_voter_id=voter_id)
+            address = person.address
+            age_group = person.age_group
+
         except:
             return JsonResponse({'message': f'Record not found for voter ID: {voter_id}.'}, status=404)
 
@@ -50,18 +54,34 @@ def show(request):
         try:
             person = Voter.objects.get(
                 f_name=first_name.upper(), l_name=last_name.upper(), birthdate=birthdate.replace('-', '/'))
+            address = person.get_address()
+            age_group = person.get_age_group()
         except:
             return JsonResponse({'message': f'Record not found for {first_name} {last_name}.'}, status=404)
+
+        if not person.user:
+            Visitor.objects.create(
+                f_name=person.f_name,
+                l_name=person.l_name,
+                state_voter_id=person.state_voter_id,
+                address=person.get_address(),
+                county_code=person.county_code,
+                city=person.city,
+                age_group=person.get_age_group(),
+                birthdate=person.birthdate)
+            person.user = True
+            # person.update(user=True)
+            person.save()
 
     data = {
         'first_name': person.f_name,
         'last_name': person.l_name,
-        "middle_name": person.m_name,
+        # "middle_name": person.m_name,
         'voter_id': person.state_voter_id,
-        'address': person.get_address(),
+        'address': address,
         'county_code': person.county_code,
         'city': person.city,
-        'age_group': person.get_age_group()
+        'age_group': age_group
     }
     return JsonResponse(data, status=200)
 
@@ -71,9 +91,35 @@ def show_votes(request):
     if not voter_id:
         return JsonResponse({'message': "Must supply state_voter_id"}, status=400)
 
-    votes = Vote_Date.objects.filter(state_voter_id=voter_id)
+    returning_user = request.GET.get('returning_user', None)
+    remember_me = request.GET.get('remember_me', None)
+    print(voter_id, returning_user, remember_me)
+    votes = []
+    if returning_user == 'true':
+        print('returning user')
+        voter = Visitor.objects.get(state_voter_id=voter_id)
+        votes = voter.voting_history
+    else:
+        print('new user')
+        voting_history = Vote_Date.objects.filter(state_voter_id=voter_id)
+        votes = [vote.election_date for vote in voting_history]
+    if remember_me == 'true':
+        print(remember_me)
+        print('remember me')
+        # voting_history = Vote_Date.objects.filter(state_voter_id=voter_id)
+        # votes = [vote.election_date for vote in voting_history]
+        print(votes)
+        voter = Visitor.objects.get(state_voter_id=voter_id)
+        print(voter.f_name)
+        print(voter.voting_history)
+        voter.voting_history.clear()
+        for vote in votes:
+            voter.voting_history.append(vote)
+        # voter.update(voting_history=votes)
+        # voter.save(voting_history=votes)
+        voter.save()
     data = {
-        'voting_days': [vote.election_date for vote in votes]
+        'voting_days': votes
     }
 
     return JsonResponse(data, status=200)
@@ -108,10 +154,10 @@ def get_elections(request):
 
     if city:
         row = City_Votes.objects.get(city=city)
-        print('======== City =========')
+        # print('======== City =========')
     else:
         row = County_Votes.objects.get(county_code=county_code)
-        print('======== County =========')
+        # print('======== County =========')
 
     max_elections = row.max_votes()
     return JsonResponse({'max_elections': max_elections}, status=200)
@@ -141,9 +187,9 @@ def get_stats(request):
     for row in rows:
         # data.append({'city': row.city, 'county_code': row.county_code, 'age_group': row.age_group,
         #              'voting_freq': row.voting_freq})
-        print("++++++++++++++++++++++++++++++")
-        print(row.voting_freq)
-        print(row.voting_freq[:max_votes + 1])
+        # print("++++++++++++++++++++++++++++++")
+        # print(row.voting_freq)
+        # print(row.voting_freq[:max_votes + 1])
         data[row.age_group] = row.voting_freq[:max_votes + 1]
 
     return JsonResponse({'stats': data}, status=200)

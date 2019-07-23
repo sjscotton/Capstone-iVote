@@ -34,6 +34,7 @@ class Voter(models.Model):
     absentee_type = models.CharField(max_length=10, default='00')
     last_voted = models.CharField(max_length=15, default='00')
     status_code = models.CharField(max_length=10, default='00')
+    user = models.BooleanField(default=False)
 
     def __str__(self):
         return self.f_name
@@ -166,3 +167,16 @@ class City_Votes(models.Model):
                 break
             max_elections -= 1
         return max_elections
+
+
+class Visitor(models.Model):
+    state_voter_id = models.CharField(max_length=25, default='00')
+    f_name = models.CharField(max_length=30, default='00')
+    l_name = models.CharField(max_length=30, default='00')
+    birthdate = models.CharField(max_length=15, default='00')
+    address = models.CharField(max_length=70, default='00')
+    city = models.CharField(max_length=30, default='00')
+    county_code = models.CharField(max_length=20, default='00')
+    age_group = models.CharField(max_length=20, default='00')
+    has_voting_history = models.BooleanField(default=False)
+    voting_history = ArrayField(models.CharField(max_length=20), default=list)
